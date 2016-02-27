@@ -38,13 +38,9 @@ class LumenServiceProvider extends BaseProvider
             TypeMakeCommand::class,
         ]);
 
-        $this->app->singleton(GraphQL::class, function ($app) {
-            return new GraphQL;
-        });
+        $this->app->singleton(GraphQL::class);
 
-        $this->app->singleton(Relay::class, function ($app) {
-            return new Relay;
-        });
+        $this->app->singleton(Relay::class);
     }
 
     /**

@@ -29,7 +29,7 @@ class LaravelController extends Controller
      * Execute GraphQL query.
      *
      * @param  Request $request
-     * @return Response
+     * @return \Illuminate\Http\JsonResponse
      */
     public function query(Request $request)
     {

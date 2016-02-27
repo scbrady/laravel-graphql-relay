@@ -41,13 +41,9 @@ class LaravelServiceProvider extends BaseProvider
             TypeMakeCommand::class,
         ]);
 
-        $this->app->singleton(GraphQL::class, function ($app) {
-            return new GraphQL;
-        });
+        $this->app->singleton(GraphQL::class);
 
-        $this->app->singleton(Relay::class, function ($app) {
-            return new Relay;
-        });
+        $this->app->singleton(Relay::class);
     }
 
     /**
@@ -74,6 +70,8 @@ class LaravelServiceProvider extends BaseProvider
     protected function registerRelayTypes()
     {
         $relay = $this->app['relay'];
+
+        app();
 
         $relay->group(['namespace' => 'Nuwave\\Relay'], function () use ($relay) {
             $relay->query('node', 'Node\\NodeQuery');

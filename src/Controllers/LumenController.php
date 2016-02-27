@@ -9,6 +9,23 @@ use Nuwave\Relay\GraphQL;
 class LumenController extends Controller
 {
     /**
+     * The controller's GraphQL instance.
+     *
+     * @var GraphQL
+     */
+    protected $graphQL;
+
+    /**
+     * RelayController constructor.
+     *
+     * @param GraphQL $graphQL
+     */
+    public function __construct(GraphQL $graphQL)
+    {
+        $this->graphQL = $graphQL;
+    }
+
+    /**
      * Execute GraphQL query.
      *
      * @param  Request $request
@@ -24,6 +41,6 @@ class LumenController extends Controller
             $variables = json_decode($variables, true);
         }
 
-        return app(GraphQL::class)->runQuery($query, $variables);
+        return $this->graphQL->runQuery($query, $variables);
     }
 }
