@@ -24,6 +24,13 @@ abstract class RelayConnection extends GraphQLType
     protected $edgeResolver;
 
     /**
+     * The container instance of GraphQL.
+     *
+     * @var
+     */
+    protected $graphQL;
+
+    /**
      * The pageInfo resolver for this connection type.
      *
      * @var \Closure
@@ -36,6 +43,13 @@ abstract class RelayConnection extends GraphQLType
      * @var string
      */
     protected $name = '';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->graphQL = app('graphql');
+    }
 
     /**
      * Special fields present on this connection type.
@@ -56,7 +70,7 @@ abstract class RelayConnection extends GraphQLType
     {
         return [
             'pageInfo' => [
-                'type' => Type::nonNull(GraphQL::type('pageInfo')),
+                'type' => Type::nonNull($this->graphQL->type('pageInfo')),
                 'description' => 'Information to aid in pagination.',
                 'resolve' => function ($collection) {
                     return $collection;

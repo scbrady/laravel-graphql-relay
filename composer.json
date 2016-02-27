@@ -25,7 +25,6 @@
         }
     },
     "require": {
-        "folklore/graphql": "*",
         "illuminate/console": "5.*"
     }
 }

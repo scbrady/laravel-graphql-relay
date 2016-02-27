@@ -7,9 +7,16 @@ class GraphQLMutation extends GraphQLField
     /**
      * The validator instance.
      *
-     * @var Validator
+     * @var \Illuminate\Validation\Factory
      */
     protected $validator;
+
+    /**
+     * The container instance of GraphQL.
+     *
+     * @var \Laravel\Lumen\Application|mixed
+     */
+    protected $graphQL;
 
     /**
      * GraphQLMutation constructor.
@@ -20,6 +27,8 @@ class GraphQLMutation extends GraphQLField
         parent::__construct();
 
         $this->validator = app('validator');
+
+        $this->graphQL = app('graphql');
     }
 
     /**

@@ -7,6 +7,24 @@ use Illuminate\Support\Fluent;
 class GraphQLField extends Fluent
 {
     /**
+     * The container instance of GraphQL.
+     *
+     * @var \Laravel\Lumen\Application|mixed
+     */
+    protected $graphQL;
+
+    /**
+     * GraphQLType constructor.
+     *
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->graphQL = app('graphql');
+    }
+
+    /**
      * Arguments this field accepts.
      *
      * @return array

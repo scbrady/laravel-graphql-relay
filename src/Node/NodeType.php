@@ -45,9 +45,9 @@ class NodeType extends GraphQLInterface
     public function resolveType($obj)
     {
         if (is_array($obj)) {
-            return GraphQL::type($obj['graphqlType']);
+            return $this->graphQL->type($obj['graphqlType']);
         }
 
-        return GraphQL::type($obj->graphqlType);
+        return $this->graphQL->type($obj->graphqlType);
     }
 }

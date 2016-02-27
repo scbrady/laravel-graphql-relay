@@ -19,7 +19,7 @@ class NodeQuery extends GraphQLQuery
      */
     public function type()
     {
-        return GraphQL::type('node');
+        return $this->graphQL->type('node');
     }
 
     /**

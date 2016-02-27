@@ -153,7 +153,7 @@ abstract class RelayType extends GraphQLType
      */
     public function interfaces()
     {
-        return [GraphQL::type('node')];
+        return [$this->graphQL->type('node')];
     }
 
     /**

@@ -8,6 +8,24 @@ use GraphQL\Type\Definition\ObjectType;
 class GraphQLType extends Fluent
 {
     /**
+     * The container instance of GraphQL.
+     *
+     * @var \Laravel\Lumen\Application|mixed
+     */
+    protected $graphQL;
+
+    /**
+     * GraphQLType constructor.
+     *
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->graphQL = app('graphql');
+    }
+
+    /**
      * Type attributes.
      *
      * @return array
