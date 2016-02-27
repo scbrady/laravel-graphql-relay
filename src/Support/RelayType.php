@@ -2,13 +2,12 @@
 
 namespace Nuwave\Relay\Support;
 
-use GraphQL;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Nuwave\Relay\Connections\Connection;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
+use Nuwave\Relay\GraphQL;
 use Nuwave\Relay\Node\Node;
 
 
@@ -75,8 +74,6 @@ abstract class RelayType extends GraphQLType
                 );
             };
 
-            $edge['args'] = Connection::connectionArgs();
-
             return $edge;
 
         })->toArray();
@@ -131,7 +128,7 @@ abstract class RelayType extends GraphQLType
      */
     public function decodeCursor(array $args)
     {
-        return isset($args['after']) ? $this->getCursorId($args['after']) : 0;
+        return isset($args['after']) ? (int) Node::decodeRelayId($args['after']) : 0;
     }
 
     /**
@@ -152,7 +149,7 @@ abstract class RelayType extends GraphQLType
      */
     public function interfaces()
     {
-        return [$this->graphQL->type('node')];
+        return [app(GraphQL::class)->type('node')];
     }
 
     /**

@@ -58,7 +58,7 @@ class Relay
      */
     public function connection($name, $namespace)
     {
-        $connectionType = $this->createField($name.'Connection', $namespace);
+        $connectionType = $this->createField(ucfirst($name.'Connection'), $namespace);
 
         $this->types[$connectionType->name] = $connectionType->namespace;
 

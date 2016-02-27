@@ -112,9 +112,7 @@ class GraphQL
      */
     public function runQuery($query, $params = [])
     {
-        $schema = $this->schema();
-
-        $result = GraphQLBase::executeAndReturnResult($schema, $query, null, $params);
+        $result = GraphQLBase::executeAndReturnResult($this->schema(), $query, null, $params);
 
         if (!empty($result->errors)) {
             return new JsonResponse([
@@ -154,7 +152,6 @@ class GraphQL
 
         $this->typesInstances[$name] = $instance;
 
-        //Check if the object has interfaces
         if($type->interfaces) {
             InterfaceType::addImplementationToInterfaces($instance);
         }

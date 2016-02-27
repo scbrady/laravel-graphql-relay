@@ -2,6 +2,8 @@
 
 namespace Nuwave\Relay\Support;
 
+use Nuwave\Relay\GraphQL;
+
 class SchemaGenerator
 {
     /**
@@ -14,7 +16,7 @@ class SchemaGenerator
     {
         $query = file_get_contents(dirname(__DIR__) . '/assets/introspection-'. $version .'.txt');
 
-        $data = app('graphql')->query($query);
+        $data = app(GraphQL::class)->query($query);
 
         if (isset($data['data']['__schema'])) {
             $schema = json_encode($data);

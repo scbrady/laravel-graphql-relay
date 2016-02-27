@@ -13,6 +13,6 @@ class Relay extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'relay';
+        return \Nuwave\Relay\Relay::class;
     }
 }

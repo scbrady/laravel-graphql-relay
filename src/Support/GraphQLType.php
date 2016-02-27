@@ -4,6 +4,7 @@ namespace Nuwave\Relay\Support;
 
 use Illuminate\Support\Fluent;
 use GraphQL\Type\Definition\ObjectType;
+use Nuwave\Relay\GraphQL;
 
 class GraphQLType extends Fluent
 {
@@ -22,7 +23,7 @@ class GraphQLType extends Fluent
     {
         parent::__construct();
 
-        $this->graphQL = app('graphql');
+        $this->graphQL = app(GraphQL::class);
     }
 
     /**

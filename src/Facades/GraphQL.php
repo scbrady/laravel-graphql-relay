@@ -13,6 +13,6 @@ class GraphQL extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'graphql';
+        return \Nuwave\Relay\GraphQL::class;
     }
 }

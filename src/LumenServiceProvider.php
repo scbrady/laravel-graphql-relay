@@ -38,11 +38,11 @@ class LumenServiceProvider extends BaseProvider
             TypeMakeCommand::class,
         ]);
 
-        $this->app->singleton('graphql', function () {
+        $this->app->singleton(GraphQL::class, function ($app) {
             return new GraphQL;
         });
 
-        $this->app->singleton('relay', function () {
+        $this->app->singleton(Relay::class, function ($app) {
             return new Relay;
         });
     }
@@ -70,7 +70,7 @@ class LumenServiceProvider extends BaseProvider
      */
     protected function registerRelayTypes()
     {
-        $relay = $this->app['relay'];
+        $relay = $this->app[Relay::class];
 
         $relay->group(['namespace' => 'Nuwave\\Relay'], function () use ($relay) {
             $relay->query('node', 'Node\\NodeQuery');
@@ -86,7 +86,7 @@ class LumenServiceProvider extends BaseProvider
      */
     protected function setGraphQLConfig()
     {
-        $relay = $this->app['relay'];
+        $relay = $this->app[Relay::class];
 
         config([
             'graphql.schema.mutation' => $relay->getMutations(),
@@ -103,7 +103,7 @@ class LumenServiceProvider extends BaseProvider
     protected function initializeTypes()
     {
         foreach(config('graphql.types') as $name => $type) {
-            $this->app['graphql']->addType($type, $name);
+            $this->app[GraphQL::class]->addType($type, $name);
         }
     }
 }

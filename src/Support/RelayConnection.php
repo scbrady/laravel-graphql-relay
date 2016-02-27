@@ -2,7 +2,7 @@
 
 namespace Nuwave\Relay\Support;
 
-use GraphQL;
+use Nuwave\Relay\GraphQL;
 use Closure;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ObjectType;
@@ -45,7 +45,7 @@ abstract class RelayConnection extends GraphQLType
     {
         parent::__construct();
 
-        $this->graphQL = app('graphql');
+        $this->graphQL = app(GraphQL::class);
     }
 
     /**
@@ -147,7 +147,7 @@ abstract class RelayConnection extends GraphQLType
         $fields = array_merge($this->baseFields(), $this->fields());
 
         return [
-            'name' => ucfirst($this->name),
+            'name' => ucfirst($this->name.'Connection'),
             'description' => 'A connection to a list of items.',
             'fields' => $fields,
             'resolve' => function ($root, $args, ResolveInfo $info) {

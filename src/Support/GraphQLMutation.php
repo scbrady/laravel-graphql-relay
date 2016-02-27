@@ -2,6 +2,8 @@
 
 namespace Nuwave\Relay\Support;
 
+use Nuwave\Relay\GraphQL;
+
 class GraphQLMutation extends GraphQLField
 {
     /**
@@ -28,7 +30,7 @@ class GraphQLMutation extends GraphQLField
 
         $this->validator = app('validator');
 
-        $this->graphQL = app('graphql');
+        $this->graphQL = app(GraphQL::class);
     }
 
     /**

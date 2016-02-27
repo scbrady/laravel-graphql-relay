@@ -2,6 +2,7 @@
 
 namespace Nuwave\Relay;
 
+use GraphQL\GraphQL;
 use Nuwave\Relay\Commands\FieldMakeCommand;
 use Nuwave\Relay\Commands\MutationMakeCommand;
 use Nuwave\Relay\Commands\QueryMakeCommand;
@@ -40,11 +41,11 @@ class LaravelServiceProvider extends BaseProvider
             TypeMakeCommand::class,
         ]);
 
-        $this->app->singleton('graphql', function () {
+        $this->app->singleton(GraphQL::class, function ($app) {
             return new GraphQL;
         });
 
-        $this->app->singleton('relay', function () {
+        $this->app->singleton(Relay::class, function ($app) {
             return new Relay;
         });
     }
