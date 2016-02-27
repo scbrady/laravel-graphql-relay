@@ -1,11 +1,8 @@
 <?php
 
-namespace Nuwave\Relay\Schema;
+namespace Nuwave\Relay\Support;
 
-use Closure;
-use Illuminate\Support\Collection;
-
-class Field
+class RelayField
 {
     /**
      * Field name.
@@ -51,6 +48,17 @@ class Field
     }
 
     /**
+     * Add middleware to collection.
+     *
+     * @param  string $middleware
+     * @return void
+     */
+    protected function attachMiddleware($middleware)
+    {
+        $this->middleware[] = $middleware;
+    }
+
+    /**
      * Get field attributes.
      *
      * @return array
@@ -73,21 +81,10 @@ class Field
     {
         $middlewares = is_array($middlewares) ? $middlewares : [$middlewares];
 
-        foreach ($middlewares as $middlware) {
-            $this->attachMiddleware($middlware);
+        foreach ($middlewares as $middleware) {
+            $this->attachMiddleware($middleware);
         }
 
         return $this;
-    }
-
-    /**
-     * Add middleware to collection.
-     *
-     * @param  string $middleware
-     * @return void
-     */
-    protected function attachMiddleware($middleware)
-    {
-        $this->middleware[] = $middleware;
     }
 }

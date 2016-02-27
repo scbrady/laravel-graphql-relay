@@ -6,9 +6,9 @@ use GraphQL;
 use Nuwave\Relay\Traits\GlobalIdTrait;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ResolveInfo;
-use Folklore\GraphQL\Support\Query;
+use Nuwave\Relay\Support\GraphQLQuery;
 
-class NodeQuery extends Query
+class NodeQuery extends GraphQLQuery
 {
     use GlobalIdTrait;
 
@@ -42,7 +42,7 @@ class NodeQuery extends Query
      *
      * @param  string $root
      * @param  array $args
-     * @return Illuminate\Database\Eloquent\Model|array
+     * @return \Illuminate\Database\Eloquent\Model|array
      */
     public function resolve($root, array $args, ResolveInfo $info)
     {

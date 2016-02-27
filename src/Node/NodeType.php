@@ -4,14 +4,14 @@ namespace Nuwave\Relay\Node;
 
 use GraphQL;
 use GraphQL\Type\Definition\Type;
-use Folklore\GraphQL\Support\InterfaceType;
+use Nuwave\Relay\Support\GraphQLInterface;
 
-class NodeType extends InterfaceType
+class NodeType extends GraphQLInterface
 {
     /**
      * Interface attributes.
      *
-     * @var array
+     * @return array
      */
     public function attributes()
     {

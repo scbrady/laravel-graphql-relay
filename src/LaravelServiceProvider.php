@@ -2,14 +2,11 @@
 
 namespace Nuwave\Relay;
 
-use Folklore\GraphQL\GraphQL;
 use Nuwave\Relay\Commands\FieldMakeCommand;
 use Nuwave\Relay\Commands\MutationMakeCommand;
 use Nuwave\Relay\Commands\QueryMakeCommand;
 use Nuwave\Relay\Commands\SchemaCommand;
 use Nuwave\Relay\Commands\TypeMakeCommand;
-use Nuwave\Relay\Schema\Parser;
-use Nuwave\Relay\Schema\SchemaContainer;
 use Illuminate\Support\ServiceProvider as BaseProvider;
 
 class LaravelServiceProvider extends BaseProvider
@@ -44,11 +41,11 @@ class LaravelServiceProvider extends BaseProvider
         ]);
 
         $this->app->singleton('graphql', function ($app) {
-            return new GraphQL($app);
+            return new GraphQL;
         });
 
-        $this->app->singleton('relay', function ($app) {
-            return new SchemaContainer(new Parser);
+        $this->app->singleton('relay', function () {
+            return new Relay;
         });
     }
 
@@ -63,7 +60,25 @@ class LaravelServiceProvider extends BaseProvider
 
         $this->setGraphQLConfig();
 
+        $this->registerRelayTypes();
+
         $this->initializeTypes();
+    }
+
+    /**
+     * Register the default relay types in the schema.
+     *
+     * @return void
+     */
+    protected function registerRelayTypes()
+    {
+        $relay = $this->app['relay'];
+
+        $relay->group(['namespace' => 'Nuwave\\Relay'], function () use ($relay) {
+            $relay->query('node', 'Node\\NodeQuery');
+            $relay->type('node', 'Node\\NodeType');
+            $relay->type('pageInfo', 'Types\\PageInfoType');
+        });
     }
 
     /**
@@ -76,9 +91,9 @@ class LaravelServiceProvider extends BaseProvider
         $relay = $this->app['relay'];
 
         config([
-            'graphql.schema.mutation' => $relay->getMutations()->config(),
-            'graphql.schema.query' => $relay->getQueries()->config(),
-            'graphql.types' => $relay->getTypes()->config(),
+            'graphql.schema.mutation' => $relay->getMutations(),
+            'graphql.schema.query' => $relay->getQueries(),
+            'graphql.types' => $relay->getTypes(),
         ]);
     }
 

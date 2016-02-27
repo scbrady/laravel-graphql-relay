@@ -1,17 +1,17 @@
 <?php
 
-namespace Nuwave\Relay\Types;
+namespace Nuwave\Relay\Support;
 
 use GraphQL;
 use Closure;
-use Folklore\GraphQL\Support\Type as GraphQLType;
+use GraphQL\Type\Definition\Type;
+use Nuwave\Relay\Traits\GlobalIdTrait;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
-use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Nuwave\Relay\Traits\GlobalIdTrait;
+use Nuwave\Relay\Types\EdgeType;
 
-abstract class ConnectionType extends GraphQLType
+abstract class RelayConnection extends GraphQLType
 {
 
     use GlobalIdTrait;
@@ -28,8 +28,7 @@ abstract class ConnectionType extends GraphQLType
      *
      * @var \Closure
      */
-    protected  $pageInfoResolver;
-
+    protected $pageInfoResolver;
 
     /**
      * The name of the edge (i.e. `User`).

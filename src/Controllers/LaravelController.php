@@ -3,10 +3,10 @@
 namespace Nuwave\Relay\Controllers;
 
 use Illuminate\Http\Request;
-use Laravel\Lumen\Routing\Controller;
+use Illuminate\Routing\Controller;
 use Nuwave\Relay\GraphQL;
 
-class LumenController extends Controller
+class LaravelController extends Controller
 {
     /**
      * The controller's GraphQL instance.

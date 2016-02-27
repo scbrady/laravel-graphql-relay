@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuwave\Relay\Types;
+namespace Nuwave\Relay\Support;
 
 use GraphQL;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -11,7 +11,7 @@ use Nuwave\Relay\Traits\GlobalIdTrait;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 
 
-abstract class RelayType extends \Folklore\GraphQL\Support\Type
+abstract class RelayType extends GraphQLType
 {
 
     use GlobalIdTrait;
@@ -76,7 +76,7 @@ abstract class RelayType extends \Folklore\GraphQL\Support\Type
                 );
             };
 
-            $edge['args'] = ConnectionType::connectionArgs();
+            $edge['args'] = RelayConnection::connectionArgs();
 
             return $edge;
 

@@ -4,9 +4,9 @@ namespace Nuwave\Relay\Types;
 
 use GraphQL;
 use Closure;
-use Folklore\GraphQL\Support\Type as GraphQLType;
-use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\Type;
+use Nuwave\Relay\Support\GraphQLType;
+use GraphQL\Type\Definition\ObjectType;
 
 class EdgeType extends GraphQLType
 {

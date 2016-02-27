@@ -3,10 +3,9 @@
 namespace Nuwave\Relay\Types;
 
 use GraphQL\Type\Definition\Type;
-use GraphQL\Type\Definition\ResolveInfo;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Folklore\GraphQL\Support\Type as GraphQLType;
 use Nuwave\Relay\Traits\GlobalIdTrait;
+use Nuwave\Relay\Support\GraphQLType;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class PageInfoType extends GraphQLType
 {
