@@ -8,6 +8,9 @@ use Nuwave\Relay\Commands\QueryMakeCommand;
 use Nuwave\Relay\Commands\SchemaCommand;
 use Nuwave\Relay\Commands\TypeMakeCommand;
 use Illuminate\Support\ServiceProvider as BaseProvider;
+use Nuwave\Relay\Connections\PageInfoType;
+use Nuwave\Relay\Node\NodeQuery;
+use Nuwave\Relay\Node\NodeType;
 
 class LumenServiceProvider extends BaseProvider
 {
@@ -20,7 +23,7 @@ class LumenServiceProvider extends BaseProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'relay');
 
-        $this->registerSchema();
+        $this->bootSchema();
     }
 
     /**
@@ -30,6 +33,38 @@ class LumenServiceProvider extends BaseProvider
      */
     public function register()
     {
+        $this->app->singleton(GraphQL::class);
+    }
+
+    /**
+     * Boot schema mutations and queries.
+     *
+     * @return void
+     */
+    protected function bootSchema()
+    {
+        $this->registerRelayTypes();
+
+        $schema = config('relay');
+
+        // Add each type to the GraphQL container
+        foreach($schema['types'] as $name => $type) {
+            $this->app[GraphQL::class]->addType($type, $name);
+        }
+
+        // Add each connection type to the GraphQL container
+        foreach($schema['connectionTypes'] as $name => $type) {
+            $this->app[GraphQL::class]->addType($type, ucfirst($name.'Connection'));
+        }
+    }
+
+    /**
+     * Register the commands provided by this package.
+     *
+     * @return void
+     */
+    protected function registerCommands()
+    {
         $this->commands([
             SchemaCommand::class,
             MutationMakeCommand::class,
@@ -37,26 +72,6 @@ class LumenServiceProvider extends BaseProvider
             QueryMakeCommand::class,
             TypeMakeCommand::class,
         ]);
-
-        $this->app->singleton(GraphQL::class);
-
-        $this->app->singleton(Relay::class);
-    }
-
-    /**
-     * Register schema mutations and queries.
-     *
-     * @return void
-     */
-    protected function registerSchema()
-    {
-        $this->registerRelayTypes();
-
-        require_once __DIR__ . '/../../../../app/' . config('relay.schema_path');
-
-        $this->setGraphQLConfig();
-
-        $this->initializeTypes();
     }
 
     /**
@@ -66,40 +81,18 @@ class LumenServiceProvider extends BaseProvider
      */
     protected function registerRelayTypes()
     {
-        $relay = $this->app[Relay::class];
+        $types = array_merge([
+            'node' => NodeType::class,
+            'pageInfo' => PageInfoType::class,
+        ], config('relay.types'));
 
-        $relay->group(['namespace' => 'Nuwave\\Relay'], function () use ($relay) {
-            $relay->query('node', 'Node\\NodeQuery');
-            $relay->type('node', 'Node\\NodeType');
-            $relay->type('pageInfo', 'Connections\\PageInfoType');
-        });
-    }
-
-    /**
-     * Set GraphQL configuration variables.
-     *
-     * @return void
-     */
-    protected function setGraphQLConfig()
-    {
-        $relay = $this->app[Relay::class];
+        $queries = array_merge([
+            'node' => NodeQuery::class,
+        ], config('relay.queries'));
 
         config([
-            'graphql.schema.mutation' => $relay->getMutations(),
-            'graphql.schema.query' => $relay->getQueries(),
-            'graphql.types' => $relay->getTypes(),
+            'relay.queries' => $queries,
+            'relay.types' => $types,
         ]);
-    }
-
-    /**
-     * Initialize GraphQL types array.
-     *
-     * @return void
-     */
-    protected function initializeTypes()
-    {
-        foreach(config('graphql.types') as $name => $type) {
-            $this->app[GraphQL::class]->addType($type, $name);
-        }
     }
 }

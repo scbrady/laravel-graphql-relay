@@ -7,7 +7,6 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
-use Nuwave\Relay\GraphQL;
 use Nuwave\Relay\Node\Node;
 
 
@@ -94,6 +93,7 @@ abstract class RelayType extends GraphQLType
             $items = method_exists($collection, $name)
                 ? $collection->$name()->select(...$this->getSelectFields($info))->get()
                 : $collection->getAttribute($name);
+
             return $items;
         } elseif (is_object($collection) && method_exists($collection, 'get')) {
             $items = $collection->get($name);
@@ -114,10 +114,19 @@ abstract class RelayType extends GraphQLType
      */
     protected function getSelectFields(ResolveInfo $info)
     {
+        $foreignKeys = [];
+
         return collect($info->getFieldSelection(4)['edges']['node'])
-            ->reject(function ($value) {
-                is_array($value);
-            })->keys()->toArray();
+            ->reject(function ($value, $key) use (&$foreignKeys) {
+                if (is_array($value)) {
+                    $foreignKeys[$key.'_id'] = true;
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            ->merge($foreignKeys)
+            ->keys()->toArray();
     }
 
     /**
@@ -149,7 +158,9 @@ abstract class RelayType extends GraphQLType
      */
     public function interfaces()
     {
-        return [app(GraphQL::class)->type('node')];
+        return [
+            $this->graphQL->type('node')
+        ];
     }
 
     /**

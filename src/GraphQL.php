@@ -53,6 +53,16 @@ class GraphQL
     }
 
     /**
+     * Get all the currently registered types.
+     *
+     * @return array
+     */
+    public function getTypes()
+    {
+        return $this->types;
+    }
+
+    /**
      * Build the GraphQL schema.
      *
      * @return Schema
@@ -62,17 +72,17 @@ class GraphQL
     {
         $this->typesInstances = [];
 
-        $schema = config('graphql.schema');
+        $config = config('relay');
 
         foreach($this->types as $name => $type) {
             $this->type($name);
         }
 
-        $queryType = $this->buildTypeFromFields(array_get($schema, 'query', []), [
+        $queryType = $this->buildTypeFromFields(array_get($config, 'queries', []), [
             'name' => 'Query'
         ]);
 
-        $mutationType = $this->buildTypeFromFields(array_get($schema, 'mutation', []), [
+        $mutationType = $this->buildTypeFromFields(array_get($config, 'mutations', []), [
             'name' => 'Mutation'
         ]);
 

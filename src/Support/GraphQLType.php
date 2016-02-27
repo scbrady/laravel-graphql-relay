@@ -2,6 +2,7 @@
 
 namespace Nuwave\Relay\Support;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Fluent;
 use GraphQL\Type\Definition\ObjectType;
 use Nuwave\Relay\GraphQL;
@@ -27,16 +28,6 @@ class GraphQLType extends Fluent
     }
 
     /**
-     * Type attributes.
-     *
-     * @return array
-     */
-    public function attributes()
-    {
-        return [];
-    }
-
-    /**
      * Type fields.
      *
      * @return array
@@ -54,10 +45,9 @@ class GraphQLType extends Fluent
     public function getAttributes()
     {
         $attributes = array_merge(
-            $this->attributes,
-            ['fields' => $this->getFields()],
-            $this->attributes()
-        );
+            $this->attributes, [
+                'fields' =>  $this->getFields(),
+            ]);
 
         if(sizeof($this->interfaces())) {
             $attributes['interfaces'] = $this->interfaces();
@@ -95,28 +85,25 @@ class GraphQLType extends Fluent
      */
     public function getFields()
     {
-        $fields = $this->fields();
-        $allFields = [];
-        foreach($fields as $name => $field)
-        {
-            if(is_string($field))
-            {
+        $collection = new Collection($this->fields());
+
+        return $collection->transform(function ($field, $name) {
+            if(is_string($field)) {
                 $field = app($field);
+
                 $field->name = $name;
-                $allFields[$name] = $field->toArray();
-            }
-            else
-            {
+
+                return $field->toArray();
+            } else {
                 $resolver = $this->getFieldResolver($name, $field);
-                if($resolver)
-                {
+
+                if ($resolver) {
                     $field['resolve'] = $resolver;
                 }
-                $allFields[$name] = $field;
-            }
-        }
 
-        return $allFields;
+                return $field;
+            }
+        })->toArray();
     }
 
     /**

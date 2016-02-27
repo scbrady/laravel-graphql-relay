@@ -48,7 +48,7 @@ class NodeQuery extends GraphQLQuery
         // as well as the type's name.
         list($typeClass, $id) = Node::decodeGlobalId($args['id']);
 
-        foreach (config('graphql.types') as $type => $class) {
+        foreach ($this->graphQL->getTypes() as $type => $class) {
             if ($typeClass == $class) {
                 $objectType = app($typeClass);
 

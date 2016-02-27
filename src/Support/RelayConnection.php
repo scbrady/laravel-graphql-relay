@@ -109,8 +109,8 @@ abstract class RelayConnection extends GraphQLType
             $page = $collection->currentPage();
 
             $collection->each(function ($item, $x) use ($page) {
-                $cursor        = ($x + 1) * $page;
-                $encodedCursor = Node::encodeGlobalId('arrayconnection', $cursor);
+                $encodedCursor = Node::encodeGlobalId('arrayconnection', (($x + 1) * $page));
+
                 if (is_array($item)) {
                     $item['relayCursor'] = $encodedCursor;
                 } else {
@@ -149,7 +149,9 @@ abstract class RelayConnection extends GraphQLType
         return [
             'name' => ucfirst($this->name.'Connection'),
             'description' => 'A connection to a list of items.',
-            'fields' => $fields,
+            'fields' => function () use ($fields ) {
+                return $fields;
+            },
             'resolve' => function ($root, $args, ResolveInfo $info) {
                 return $this->resolve($root, $args, $info, $this->name);
             }

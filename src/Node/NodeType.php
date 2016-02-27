@@ -11,15 +11,12 @@ class NodeType extends GraphQLInterface
     /**
      * Interface attributes.
      *
-     * @return array
+     * @var array
      */
-    public function attributes()
-    {
-        return [
-            'name' => 'Node',
-            'description' => 'An object with an ID.'
-        ];
-    }
+    protected $attributes = [
+        'name' => 'Node',
+        'description' => 'An object with an ID.'
+    ];
 
     /**
      * Available fields on type.

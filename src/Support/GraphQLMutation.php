@@ -2,6 +2,7 @@
 
 namespace Nuwave\Relay\Support;
 
+use Illuminate\Support\Collection;
 use Nuwave\Relay\GraphQL;
 
 class GraphQLMutation extends GraphQLField
@@ -40,26 +41,24 @@ class GraphQLMutation extends GraphQLField
      */
     public function getRules()
     {
+        $collection = new Collection($this->args());
+
         $arguments = func_get_args();
 
-        $rules = call_user_func_array([$this, 'rules'], $arguments);
-        $argsRules = [];
-        foreach($this->args() as $name => $arg)
-        {
-            if(isset($arg['rules']))
-            {
-                if(is_callable($arg['rules']))
-                {
-                    $argsRules[$name] = call_user_func_array($arg['rules'], $arguments);
+        return $collection
+            ->transform(function ($arg) use ($arguments) {
+                if(isset($arg['rules'])) {
+                    if(is_callable($arg['rules'])) {
+                        return call_user_func_array($arg['rules'], $arguments);
+                    } else {
+                        return $arg['rules'];
+                    }
                 }
-                else
-                {
-                    $argsRules[$name] = $arg['rules'];
-                }
-            }
-        }
 
-        return array_merge($argsRules, $rules);
+                return null;
+            })
+            ->merge(call_user_func_array([$this, 'rules'], $arguments))
+            ->toArray();
     }
 
     /**
@@ -103,7 +102,7 @@ class GraphQLMutation extends GraphQLField
      */
     protected function validate(array $args)
     {
-        $rules = call_user_func_array([$this, 'getRules'], $args);
+        $rules = $this->getRules(...$args);
 
         if (sizeof($rules)) {
             $validator = $this->validator->make($args['input'], $rules);

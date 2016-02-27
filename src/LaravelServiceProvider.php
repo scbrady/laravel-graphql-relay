@@ -23,7 +23,7 @@ class LaravelServiceProvider extends BaseProvider
 
         $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'relay');
 
-        $this->registerSchema();
+        $this->bootSchema();
     }
 
     /**
@@ -33,6 +33,38 @@ class LaravelServiceProvider extends BaseProvider
      */
     public function register()
     {
+        $this->app->singleton(GraphQL::class);
+    }
+
+    /**
+     * Boot the schema mutations and queries.
+     *
+     * @return void
+     */
+    protected function bootSchema()
+    {
+        $schema = config('graphql');
+
+        $this->registerRelayTypes();
+
+        // Add each type to the GraphQL container
+        foreach($schema['types'] as $name => $type) {
+            $this->app[GraphQL::class]->addType($type, $name);
+        }
+
+        // Add each connection type to the GraphQL container
+        foreach($schema['connectionTypes'] as $name => $type) {
+            $this->app[GraphQL::class]->addType($type, ucfirst($name.'Connection'));
+        }
+    }
+
+    /**
+     * Register the commands provided by this package.
+     *
+     * @return void
+     */
+    protected function registerCommands()
+    {
         $this->commands([
             SchemaCommand::class,
             MutationMakeCommand::class,
@@ -40,26 +72,6 @@ class LaravelServiceProvider extends BaseProvider
             QueryMakeCommand::class,
             TypeMakeCommand::class,
         ]);
-
-        $this->app->singleton(GraphQL::class);
-
-        $this->app->singleton(Relay::class);
-    }
-
-    /**
-     * Register schema mutations and queries.
-     *
-     * @return void
-     */
-    protected function registerSchema()
-    {
-        require_once app_path(config('relay.schema_path'));
-
-        $this->setGraphQLConfig();
-
-        $this->registerRelayTypes();
-
-        $this->initializeTypes();
     }
 
     /**
@@ -69,42 +81,18 @@ class LaravelServiceProvider extends BaseProvider
      */
     protected function registerRelayTypes()
     {
-        $relay = $this->app['relay'];
+        $types = array_merge([
+            'node' => NodeType::class,
+            'pageInfo' => PageInfoType::class,
+        ], config('relay.types'));
 
-        app();
-
-        $relay->group(['namespace' => 'Nuwave\\Relay'], function () use ($relay) {
-            $relay->query('node', 'Node\\NodeQuery');
-            $relay->type('node', 'Node\\NodeType');
-            $relay->type('pageInfo', 'Connections\\PageInfoType');
-        });
-    }
-
-    /**
-     * Set GraphQL configuration variables.
-     *
-     * @return void
-     */
-    protected function setGraphQLConfig()
-    {
-        $relay = $this->app['relay'];
+        $queries = array_merge([
+            'node' => NodeQuery::class,
+        ], config('relay.queries'));
 
         config([
-            'graphql.schema.mutation' => $relay->getMutations(),
-            'graphql.schema.query' => $relay->getQueries(),
-            'graphql.types' => $relay->getTypes(),
+            'relay.queries' => $queries,
+            'relay.types' => $types,
         ]);
-    }
-
-    /**
-     * Initialize GraphQL types array.
-     *
-     * @return void
-     */
-    protected function initializeTypes()
-    {
-        foreach(config('graphql.types') as $name => $type) {
-            $this->app['graphql']->addType($type, $name);
-        }
     }
 }
