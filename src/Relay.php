@@ -145,6 +145,7 @@ class Relay
 
         $callback();
 
+
         if (isset($attributes['middleware'])) {
             array_pop($this->middlewareStack);
         }

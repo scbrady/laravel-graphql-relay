@@ -1,17 +1,14 @@
 <?php
 
-namespace Nuwave\Relay\Types;
+namespace Nuwave\Relay\Connections;
 
 use GraphQL\Type\Definition\Type;
-use Nuwave\Relay\Traits\GlobalIdTrait;
+use Nuwave\Relay\Node\Node;
 use Nuwave\Relay\Support\GraphQLType;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class PageInfoType extends GraphQLType
 {
-
-    use GlobalIdTrait;
-
     /**
      * Attributes of PageInfo.
      *
@@ -57,7 +54,7 @@ class PageInfoType extends GraphQLType
                 'description' => 'When paginating backwards, the cursor to continue.',
                 'resolve' => function ($collection) {
                     if ($collection instanceof LengthAwarePaginator) {
-                        return $this->encodeGlobalId(
+                        return Node::encodeGlobalId(
                             'arrayconnection',
                             $collection->firstItem() * $collection->currentPage()
                         );
@@ -71,7 +68,7 @@ class PageInfoType extends GraphQLType
                 'description' => 'When paginating forwards, the cursor to continue.',
                 'resolve' => function ($collection) {
                     if ($collection instanceof LengthAwarePaginator) {
-                        return $this->encodeGlobalId(
+                        return Node::encodeGlobalId(
                             'arrayconnection',
                             $collection->lastItem() * $collection->currentPage()
                         );

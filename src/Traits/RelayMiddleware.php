@@ -3,13 +3,11 @@
 namespace Nuwave\Relay\Traits;
 
 use Illuminate\Http\Request;
-use GraphQL\Language\Source;
-use GraphQL\Language\Parser;
 
 trait RelayMiddleware
 {
     /**
-     * Genarate middleware and connections from query.
+     * Generate middleware and connections from query.
      *
      * @param  Request $request
      * @return array

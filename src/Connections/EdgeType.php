@@ -1,6 +1,6 @@
 <?php
 
-namespace Nuwave\Relay\Types;
+namespace Nuwave\Relay\Connections;
 
 use GraphQL;
 use Closure;

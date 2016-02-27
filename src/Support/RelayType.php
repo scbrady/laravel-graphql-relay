@@ -7,14 +7,13 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Nuwave\Relay\Traits\GlobalIdTrait;
+use Nuwave\Relay\Connections\Connection;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
+use Nuwave\Relay\Node\Node;
 
 
 abstract class RelayType extends GraphQLType
 {
-
-    use GlobalIdTrait;
 
     /**
      * List of fields with global identifier.
@@ -28,7 +27,7 @@ abstract class RelayType extends GraphQLType
                 'type'        => Type::nonNull(Type::id()),
                 'description' => 'ID of type.',
                 'resolve'     => function ($obj) {
-                    return $this->encodeGlobalId(get_called_class(), $this->getIdentifier($obj));
+                    return Node::encodeGlobalId(get_called_class(), $this->getIdentifier($obj));
                 },
             ],
         ]);
@@ -76,7 +75,7 @@ abstract class RelayType extends GraphQLType
                 );
             };
 
-            $edge['args'] = RelayConnection::connectionArgs();
+            $edge['args'] = Connection::connectionArgs();
 
             return $edge;
 

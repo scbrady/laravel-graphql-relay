@@ -40,15 +40,24 @@ class GraphQLMutation extends GraphQLField
     {
         $arguments = func_get_args();
 
-        return collect($this->args())->transform(function ($arg) use ($arguments) {
-            if (isset($arg['rules'])) {
-                if (is_callable($arg['rules'])) {
-                    return call_user_func_array($arg['rules'], $arguments);
-                } else {
-                    return $arg['rules'];
+        $rules = call_user_func_array([$this, 'rules'], $arguments);
+        $argsRules = [];
+        foreach($this->args() as $name => $arg)
+        {
+            if(isset($arg['rules']))
+            {
+                if(is_callable($arg['rules']))
+                {
+                    $argsRules[$name] = call_user_func_array($arg['rules'], $arguments);
+                }
+                else
+                {
+                    $argsRules[$name] = $arg['rules'];
                 }
             }
-        })->merge(call_user_func_array([$this, 'rules'], $arguments))->toArray();
+        }
+
+        return array_merge($argsRules, $rules);
     }
 
     /**

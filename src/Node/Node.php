@@ -1,8 +1,8 @@
 <?php
 
-namespace Nuwave\Relay\Traits;
+namespace Nuwave\Relay\Node;
 
-trait GlobalIdTrait
+class Node
 {
     /**
      * Create global id.
@@ -11,7 +11,7 @@ trait GlobalIdTrait
      * @param  string|integer $id
      * @return string
      */
-    public function encodeGlobalId($type, $id)
+    public static function encodeGlobalId($type, $id)
     {
         return base64_encode($type . ':' . $id);
     }
@@ -22,7 +22,7 @@ trait GlobalIdTrait
      * @param  string $id
      * @return array
      */
-    public function decodeGlobalId($id)
+    public static function decodeGlobalId($id)
     {
         return explode(":", base64_decode($id));
     }
@@ -33,9 +33,9 @@ trait GlobalIdTrait
      * @param  string $id
      * @return string
      */
-    public function decodeRelayId($id)
+    public static function decodeRelayId($id)
     {
-        list($type, $id) = $this->decodeGlobalId($id);
+        list($type, $id) = static::decodeGlobalId($id);
 
         return $id;
     }
@@ -46,9 +46,9 @@ trait GlobalIdTrait
      * @param  string $id
      * @return string
      */
-    public function decodeRelayType($id)
+    public static function decodeRelayType($id)
     {
-        list($type, $id) = $this->decodeGlobalId($id);
+        list($type, $id) = static::decodeGlobalId($id);
 
         return $type;
     }

@@ -5,17 +5,14 @@ namespace Nuwave\Relay\Support;
 use GraphQL;
 use Closure;
 use GraphQL\Type\Definition\Type;
-use Nuwave\Relay\Traits\GlobalIdTrait;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Nuwave\Relay\Types\EdgeType;
+use Nuwave\Relay\Connections\EdgeType;
+use Nuwave\Relay\Node\Node;
 
 abstract class RelayConnection extends GraphQLType
 {
-
-    use GlobalIdTrait;
-
     /**
      * The edge resolver for this connection type
      *
@@ -87,29 +84,6 @@ abstract class RelayConnection extends GraphQLType
     }
 
     /**
-     * Get the default arguments for a connection.
-     *
-     * @return array
-     */
-    public static function connectionArgs()
-    {
-        return [
-            'after' => [
-                'type' => Type::string()
-            ],
-            'first' => [
-                'type' => Type::int()
-            ],
-            'before' => [
-                'type' => Type::string()
-            ],
-            'last' => [
-                'type' => Type::int()
-            ]
-        ];
-    }
-
-    /**
      * Build the edge type for this connection.
      *
      * @param $name
@@ -136,7 +110,7 @@ abstract class RelayConnection extends GraphQLType
 
             $collection->each(function ($item, $x) use ($page) {
                 $cursor        = ($x + 1) * $page;
-                $encodedCursor = $this->encodeGlobalId('arrayconnection', $cursor);
+                $encodedCursor = Node::encodeGlobalId('arrayconnection', $cursor);
                 if (is_array($item)) {
                     $item['relayCursor'] = $encodedCursor;
                 } else {
@@ -160,7 +134,7 @@ abstract class RelayConnection extends GraphQLType
      */
     protected function getCursorId($cursor)
     {
-        return (int)$this->decodeRelayId($cursor);
+        return (int) Node::decodeRelayId($cursor);
     }
 
     /**

@@ -2,16 +2,14 @@
 
 namespace Nuwave\Relay\Support;
 
-use Nuwave\Relay\Traits\GlobalIdTrait;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\InputObjectType;
+use Nuwave\Relay\Node\Node;
 
 abstract class RelayMutation extends GraphQLMutation
 {
-    use GlobalIdTrait;
-
     /**
      * Type being mutated is RelayType.
      *
@@ -84,7 +82,7 @@ abstract class RelayMutation extends GraphQLMutation
     {
         if ($this->mutatesRelayType && isset($args['input']['id'])) {
             $args['input']['relay_id'] = $args['input']['id'];
-            $args['input']['id'] = $this->decodeRelayId($args['input']['id']);
+            $args['input']['id'] = Node::decodeRelayId($args['input']['id']);
         }
 
         $this->validate($args);
