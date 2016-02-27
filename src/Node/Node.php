@@ -37,7 +37,7 @@ class Node
     {
         list($type, $id) = static::decodeGlobalId($id);
 
-        return $id;
+        return (int) $id;
     }
 
     /**
