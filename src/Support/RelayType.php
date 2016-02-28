@@ -43,6 +43,18 @@ abstract class RelayType extends GraphQLType
     }
 
     /**
+     * Decode cursor from query arguments.
+     *
+     * @param  string  $cursor
+     * @return integer
+     */
+    public function decodeCursor($cursor)
+    {
+
+        return Node::decodeRelayId($cursor);
+    }
+
+    /**
      * Generate Relay compliant edges.
      *
      * @return array
@@ -51,36 +63,40 @@ abstract class RelayType extends GraphQLType
     {
         return collect($this->connections())->transform(function ($edge, $name) {
             $edge['resolve'] = function ($collection, array $args, ResolveInfo $info) use ($name) {
-                $edges = $this->getItems($collection, $info, $name);
-                $edgeLength = $edges->count();
+                $edgeLength   = $this->getEdgeLength($collection, $name);
+
                 $edgesPerPage = $edgeLength;
-                $currentPage = 1;
+
+                $currentPage  = 1;
 
                 if (array_key_exists('first', $args)) {
                     $edgesPerPage = $args['first'];
 
                     if ($edgesPerPage < $edgeLength) {
-                        $after = array_key_exists('after', $args) ? $this->decodeCursor($args['after']) : 0;
+                        $after = array_key_exists('after', $args)
+                            ? $this->decodeCursor($args['after']) : 0;
 
-                        $currentPage = floor(($edgesPerPage + $after) / $edgesPerPage);
+                        $currentPage = $this->getCurrentPage($edgesPerPage, $after);
 
-                        $edges = $edges
-                            ->slice($edgesPerPage * ($currentPage - 1))
-                            ->take($edgesPerPage);
+                        $offset = $this->getPageOffset($edgesPerPage, $currentPage);
+
+                        $edges = $this
+                            ->getPagedItems($collection, $offset, $edgesPerPage, $info, $name);
+
                     }
-                } else if (array_key_exists('last', $args)) {
+                } elseif (array_key_exists('last', $args)) {
                     $edgesPerPage = $args['last'];
 
                     if ($edgesPerPage < $edgeLength) {
                         $before = array_key_exists('before', $args)
                             ? $this->decodeCursor($args['before']) : 0;
 
-                        $currentPage = floor(($edgesPerPage + $before) / $edgesPerPage);
+                        $currentPage = $this->getCurrentPage($edgesPerPage, $before);
 
-                        $edges = $edges
-                            ->reverse()
-                            ->slice($edgesPerPage * ($currentPage - 1))
-                            ->take($edgesPerPage);
+                        $offset = $this->getPageOffset($edgesPerPage, $currentPage);
+
+                        $edges = $this
+                            ->getPagedItems($collection, $offset, $edgesPerPage, $info, $name, 'desc');
                     }
                 }
 
@@ -89,8 +105,9 @@ abstract class RelayType extends GraphQLType
                 }
 
                 return [
+                    'args' => $args,
                     'edges' => new LengthAwarePaginator($edges, $edgeLength, $edgesPerPage, $currentPage),
-                    'args' => $args
+                    'totalCount' => $edgeLength,
                 ];
             };
 
@@ -100,31 +117,88 @@ abstract class RelayType extends GraphQLType
     }
 
     /**
-     * @param             $collection
-     * @param ResolveInfo $info
-     * @param             $name
-     * @return mixed|Collection
+     * Get the number of edges per page.
+     *
+     * @param $perPage
+     * @param $offset
+     * @return float
      */
-    protected function getItems($collection, ResolveInfo $info, $name)
+    protected function getCurrentPage($perPage, $offset)
     {
-        $items = [];
+        return floor(($perPage + $offset) / $perPage);
+    }
 
-        if ($collection instanceof Model) {
-            // Selects only the fields requested, instead of select *
-            $items = method_exists($collection, $name)
-                ? $collection->$name()->select(...$this->getSelectFields($info))->get()
-                : $collection->getAttribute($name);
-
-            return $items;
-        } elseif (is_object($collection) && method_exists($collection, 'get')) {
-            $items = $collection->get($name);
-            return $items;
-        } elseif (is_array($collection) && isset($collection[$name])) {
-            $items = new Collection($collection[$name]);
-            return $items;
+    /**
+     * Get the number of items related to the colleciton.
+     *
+     * @param $collection
+     * @param $name
+     * @return mixed
+     */
+    protected function getEdgeLength($collection, $name)
+    {
+        if (method_exists($collection, $name)) {
+            return $collection->$name()->count();
+        } else {
+            return $collection->$name->count();
         }
+    }
 
-        return $items;
+    /**
+     * Get the identifier of the type.
+     *
+     * @param \Illuminate\Database\Eloquent\Model $obj
+     * @return mixed
+     */
+    public function getIdentifier(Model $obj)
+    {
+        return $obj->id;
+    }
+
+    /**
+     * Get a list of paged items.
+     *
+     * @param        $collection
+     * @param        $offset
+     * @param        $edgesPerPage
+     * @param        $info
+     * @param        $name
+     * @param string $order
+     * @return Collection|mixed
+     */
+    protected function getPagedItems($collection, $offset, $edgesPerPage, $info, $name, $order = 'asc')
+    {
+        if (method_exists($collection, $name)) {
+
+            return $collection
+                ->$name()
+                ->orderBy('created_at', $order)
+                ->skip($offset)
+                ->take($edgesPerPage)
+                ->select(...$this->getSelectFields($info))
+                ->get();
+
+        } else {
+            $collection = $collection->$name;
+
+            $collection = $order === 'asc' ? $collection : $collection->reverse();
+
+            return $collection
+                ->slice($offset)
+                ->take($edgesPerPage);
+        }
+    }
+
+    /**
+     * Get the page offset.
+     *
+     * @param $perPage
+     * @param $currentPage
+     * @return mixed
+     */
+    protected function getPageOffset($perPage, $currentPage)
+    {
+        return $perPage * ($currentPage - 1);
     }
 
     /**
@@ -148,29 +222,6 @@ abstract class RelayType extends GraphQLType
             })
             ->merge($foreignKeys)
             ->keys()->toArray();
-    }
-
-    /**
-     * Decode cursor from query arguments.
-     *
-     * @param  string  $cursor
-     * @return integer
-     */
-    public function decodeCursor($cursor)
-    {
-
-        return Node::decodeRelayId($cursor);
-    }
-
-    /**
-     * Get the identifier of the type.
-     *
-     * @param \Illuminate\Database\Eloquent\Model $obj
-     * @return mixed
-     */
-    public function getIdentifier(Model $obj)
-    {
-        return $obj->id;
     }
 
     /**

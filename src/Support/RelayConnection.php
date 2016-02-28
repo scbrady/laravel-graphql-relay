@@ -73,6 +73,13 @@ abstract class RelayConnection extends GraphQLType
                     return $collection;
                 },
             ],
+            'totalCount' => [
+                'type' => Type::int(),
+                'description' => 'The total number of edges.',
+                'resolve' => function ($collection) {
+                    return $collection['totalCount'];
+                }
+            ],
             'edges' => [
                 'type' => Type::listOf($this->buildEdgeType($this->name, $this->type())),
                 'description' => 'Information to aid in pagination.',

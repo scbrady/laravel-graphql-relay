@@ -27,6 +27,21 @@ class PageInfoType extends GraphQLType
     public function fields()
     {
         return [
+            'endCursor' => [
+                'type' => Type::string(),
+                'description' => 'When paginating forwards, the cursor to continue.',
+                'resolve' => function (array $root) {
+                    $edges = $root['edges'];
+
+                    if ($edges instanceof LengthAwarePaginator) {
+                        $endCursor = $edges->lastItem() * $edges->currentPage();
+
+                        return Node::encodeGlobalId('arrayconnection', $endCursor);
+                    }
+
+                    return null;
+                }
+            ],
             'hasNextPage' => [
                 'type' => Type::nonNull(Type::boolean()),
                 'description' => 'When paginating forwards, are there more items?',
@@ -70,21 +85,6 @@ class PageInfoType extends GraphQLType
                     return null;
                 }
             ],
-            'endCursor' => [
-                'type' => Type::string(),
-                'description' => 'When paginating forwards, the cursor to continue.',
-                'resolve' => function (array $root) {
-                    $edges = $root['edges'];
-
-                    if ($edges instanceof LengthAwarePaginator) {
-                        $endCursor = $edges->lastItem() * $edges->currentPage();
-
-                        return Node::encodeGlobalId('arrayconnection', $endCursor);
-                    }
-
-                    return null;
-                }
-            ]
         ];
     }
 }
