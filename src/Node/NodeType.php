@@ -28,7 +28,7 @@ class NodeType extends GraphQLInterface
         return [
             'id' => [
                 'type' => Type::nonNull(Type::id()),
-                'description' => 'The id of the object.'
+                'description' => 'The ID of the object.'
             ]
         ];
     }

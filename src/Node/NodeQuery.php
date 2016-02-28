@@ -20,6 +20,16 @@ class NodeQuery extends GraphQLQuery
     }
 
     /**
+     * Query attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'name' => 'node',
+        'description' => 'Fetches an object given its ID.'
+    ];
+
+    /**
      * Arguments available on node query.
      *
      * @return array
@@ -44,26 +54,16 @@ class NodeQuery extends GraphQLQuery
      */
     public function resolve($root, array $args, ResolveInfo $info)
     {
-        // Here, we decode the base64 id and get the id of the type
-        // as well as the type's name.
-        list($typeClass, $id) = Node::decodeGlobalId($args['id']);
+        list($typeClass, $id) = Node::fromGlobalId($args['id']);
 
-        foreach ($this->graphQL->getTypes() as $type => $class) {
-            if ($typeClass == $class) {
-                $objectType = app($typeClass);
+        $types = collect($this->graphQL->getTypes());
 
-                $model = $objectType->resolveById($id);
+        $objectType = app($types[$types->search($typeClass)]);
 
-                if (is_array($model)) {
-                    $model['graphqlType'] = $type;
-                } elseif (is_object($model)) {
-                    $model->graphqlType = $type;
-                }
+        $model = $objectType->resolveById($id);
 
-                return $model;
-            }
-        }
+        $model->graphqlType = $type;
 
-        return null;
+        return $model ?: null;
     }
 }

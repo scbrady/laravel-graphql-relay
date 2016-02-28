@@ -34,9 +34,7 @@ class PageInfoType extends GraphQLType
                     $edges = $root['edges'];
 
                     if ($edges instanceof LengthAwarePaginator) {
-                        $endCursor = $edges->lastItem() * $edges->currentPage();
-
-                        return Node::encodeGlobalId('arrayconnection', $endCursor);
+                        return $edges->last()->relayCursor;
                     }
 
                     return null;
@@ -47,9 +45,8 @@ class PageInfoType extends GraphQLType
                 'description' => 'When paginating forwards, are there more items?',
                 'resolve' => function (array $root) {
                     $edges = $root['edges'];
-                    $args = $root['args'];
 
-                    if (array_key_exists('first', $args) && $edges instanceof LengthAwarePaginator) {
+                    if (array_key_exists('first', $root['args']) && $edges instanceof LengthAwarePaginator) {
                         return $edges->hasMorePages();
                     } else {
                         return false;
@@ -61,9 +58,8 @@ class PageInfoType extends GraphQLType
                 'description' => 'When paginating backwards, are there more items?',
                 'resolve' => function (array $root) {
                     $edges = $root['edges'];
-                    $args = $root['args'];
 
-                    if (array_key_exists('last', $args) && $edges instanceof LengthAwarePaginator) {
+                    if (array_key_exists('last', $root['args']) && $edges instanceof LengthAwarePaginator) {
                         return $edges->hasMorePages();
                     } else {
                         return false;
@@ -77,9 +73,7 @@ class PageInfoType extends GraphQLType
                     $edges = $root['edges'];
 
                     if ($edges instanceof LengthAwarePaginator) {
-                        $startCursor = $edges->firstItem() * $edges->currentPage();
-
-                        return Node::encodeGlobalId('arrayconnection', $startCursor);
+                        return $edges->last()->relayCursor;
                     }
 
                     return null;

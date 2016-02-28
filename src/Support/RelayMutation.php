@@ -82,7 +82,7 @@ abstract class RelayMutation extends GraphQLMutation
     {
         if ($this->mutatesRelayType && isset($args['input']['id'])) {
             $args['input']['relay_id'] = $args['input']['id'];
-            $args['input']['id'] = Node::decodeRelayId($args['input']['id']);
+            $args['input']['id'] = Node::idFromGlobalId($args['input']['id']);
         }
 
         $this->validate($args);

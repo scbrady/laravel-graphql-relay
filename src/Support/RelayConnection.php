@@ -70,6 +70,8 @@ abstract class RelayConnection extends GraphQLType
                 'type' => Type::nonNull($this->graphQL->type('pageInfo')),
                 'description' => 'Information to aid in pagination.',
                 'resolve' => function ($collection) {
+                    $collection['edges'] = $this->applyCursorsToEdges($collection['edges']);
+
                     return $collection;
                 },
             ],
@@ -84,7 +86,7 @@ abstract class RelayConnection extends GraphQLType
                 'type' => Type::listOf($this->buildEdgeType($this->name, $this->type())),
                 'description' => 'Information to aid in pagination.',
                 'resolve' => function ($collection) {
-                    return $this->injectCursor($collection['edges']);
+                    return $this->applyCursorsToEdges($collection['edges']);
                 },
             ]
         ];
@@ -105,28 +107,20 @@ abstract class RelayConnection extends GraphQLType
     }
 
     /**
-     * Inject encoded cursor into collection items.
+     * Apply cursors to edges.
      *
      * @param  mixed $collection
      * @return mixed
      */
-    protected function injectCursor($collection)
+    protected function applyCursorsToEdges($collection)
     {
         if ($collection instanceof LengthAwarePaginator) {
-            $page = $collection->currentPage();
+            $currentPage = $collection->currentPage();
 
-            $collection->each(function ($item, $x) use ($page) {
-                $encodedCursor = Node::encodeGlobalId('arrayconnection', (($x + 1) * $page));
+            $collection->each(function ($item, $key) use ($currentPage) {
+                $encodedCursor = Node::toGlobalId('arrayconnection', ($key + 1) * $currentPage);
 
-                if (is_array($item)) {
-                    $item['relayCursor'] = $encodedCursor;
-                } else {
-                    if (is_object($item) && is_array($item->attributes)) {
-                        $item->attributes['relayCursor'] = $encodedCursor;
-                    } else {
-                        $item->relayCursor = $encodedCursor;
-                    }
-                }
+                $item->relayCursor = $encodedCursor;
             });
         }
 
@@ -141,7 +135,7 @@ abstract class RelayConnection extends GraphQLType
      */
     protected function getCursorId($cursor)
     {
-        return (int) Node::decodeRelayId($cursor);
+        return (int) Node::idFromGlobalId($cursor);
     }
 
     /**
