@@ -77,7 +77,7 @@ abstract class RelayConnection extends GraphQLType
                 'type' => Type::listOf($this->buildEdgeType($this->name, $this->type())),
                 'description' => 'Information to aid in pagination.',
                 'resolve' => function ($collection) {
-                    return $this->injectCursor($collection);
+                    return $this->injectCursor($collection['edges']);
                 },
             ]
         ];

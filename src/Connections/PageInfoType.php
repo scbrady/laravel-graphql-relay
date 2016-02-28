@@ -15,7 +15,7 @@ class PageInfoType extends GraphQLType
      * @var array
      */
     protected $attributes = [
-        'name' => 'pageInfo',
+        'name' => 'PageInfo',
         'description' => 'Information to aid in pagination.'
     ];
 
@@ -30,34 +30,41 @@ class PageInfoType extends GraphQLType
             'hasNextPage' => [
                 'type' => Type::nonNull(Type::boolean()),
                 'description' => 'When paginating forwards, are there more items?',
-                'resolve' => function ($collection) {
-                    if ($collection instanceof LengthAwarePaginator) {
-                        return $collection->hasMorePages();
-                    }
+                'resolve' => function (array $root) {
+                    $edges = $root['edges'];
+                    $args = $root['args'];
 
-                    return false;
+                    if (array_key_exists('first', $args) && $edges instanceof LengthAwarePaginator) {
+                        return $edges->hasMorePages();
+                    } else {
+                        return false;
+                    }
                 }
             ],
             'hasPreviousPage' => [
                 'type' => Type::nonNull(Type::boolean()),
                 'description' => 'When paginating backwards, are there more items?',
-                'resolve' => function ($collection) {
-                    if ($collection instanceof LengthAwarePaginator) {
-                        return $collection->currentPage() > 1;
-                    }
+                'resolve' => function (array $root) {
+                    $edges = $root['edges'];
+                    $args = $root['args'];
 
-                    return false;
+                    if (array_key_exists('last', $args) && $edges instanceof LengthAwarePaginator) {
+                        return $edges->hasMorePages();
+                    } else {
+                        return false;
+                    }
                 }
             ],
             'startCursor' => [
                 'type' => Type::string(),
                 'description' => 'When paginating backwards, the cursor to continue.',
-                'resolve' => function ($collection) {
-                    if ($collection instanceof LengthAwarePaginator) {
-                        return Node::encodeGlobalId(
-                            'arrayconnection',
-                            $collection->firstItem() * $collection->currentPage()
-                        );
+                'resolve' => function (array $root) {
+                    $edges = $root['edges'];
+
+                    if ($edges instanceof LengthAwarePaginator) {
+                        $startCursor = $edges->firstItem() * $edges->currentPage();
+
+                        return Node::encodeGlobalId('arrayconnection', $startCursor);
                     }
 
                     return null;
@@ -66,12 +73,13 @@ class PageInfoType extends GraphQLType
             'endCursor' => [
                 'type' => Type::string(),
                 'description' => 'When paginating forwards, the cursor to continue.',
-                'resolve' => function ($collection) {
-                    if ($collection instanceof LengthAwarePaginator) {
-                        return Node::encodeGlobalId(
-                            'arrayconnection',
-                            $collection->lastItem() * $collection->currentPage()
-                        );
+                'resolve' => function (array $root) {
+                    $edges = $root['edges'];
+
+                    if ($edges instanceof LengthAwarePaginator) {
+                        $endCursor = $edges->lastItem() * $edges->currentPage();
+
+                        return Node::encodeGlobalId('arrayconnection', $endCursor);
                     }
 
                     return null;

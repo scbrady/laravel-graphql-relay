@@ -2,11 +2,12 @@
 
 namespace Nuwave\Relay\Support;
 
+use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Pagination\LengthAwarePaginator as Paginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Nuwave\Relay\Node\Node;
 
 
@@ -50,27 +51,47 @@ abstract class RelayType extends GraphQLType
     {
         return collect($this->connections())->transform(function ($edge, $name) {
             $edge['resolve'] = function ($collection, array $args, ResolveInfo $info) use ($name) {
-                $items = $this->getItems($collection, $info, $name);
+                $edges = $this->getItems($collection, $info, $name);
+                $edgeLength = $edges->count();
+                $edgesPerPage = $edgeLength;
+                $currentPage = 1;
 
-                if (isset($args['first'])) {
-                    $total       = $items->count();
-                    $first       = $args['first'];
-                    $after       = $this->decodeCursor($args);
-                    $currentPage = $first && $after ? floor(($first + $after) / $first) : 1;
+                if (array_key_exists('first', $args)) {
+                    $edgesPerPage = $args['first'];
 
-                    return new Paginator(
-                        $items->slice($after)->take($first),
-                        $total,
-                        $first,
-                        $currentPage
-                    );
+                    if ($edgesPerPage < $edgeLength) {
+                        $after = array_key_exists('after', $args) ? $this->decodeCursor($args['after']) : 0;
+
+                        $currentPage = floor(($edgesPerPage + $after) / $edgesPerPage);
+
+                        $edges = $edges
+                            ->slice($edgesPerPage * ($currentPage - 1))
+                            ->take($edgesPerPage);
+                    }
+                } else if (array_key_exists('last', $args)) {
+                    $edgesPerPage = $args['last'];
+
+                    if ($edgesPerPage < $edgeLength) {
+                        $before = array_key_exists('before', $args)
+                            ? $this->decodeCursor($args['before']) : 0;
+
+                        $currentPage = floor(($edgesPerPage + $before) / $edgesPerPage);
+
+                        $edges = $edges
+                            ->reverse()
+                            ->slice($edgesPerPage * ($currentPage - 1))
+                            ->take($edgesPerPage);
+                    }
                 }
 
-                return new Paginator(
-                    $items,
-                    count($items),
-                    count($items)
-                );
+                if (!$edgesPerPage || !$currentPage) {
+                    throw new Exception('You must specify "first & after" or "last & before" arguments for connections.');
+                }
+
+                return [
+                    'edges' => new LengthAwarePaginator($edges, $edgeLength, $edgesPerPage, $currentPage),
+                    'args' => $args
+                ];
             };
 
             return $edge;
@@ -132,12 +153,13 @@ abstract class RelayType extends GraphQLType
     /**
      * Decode cursor from query arguments.
      *
-     * @param  array  $args
+     * @param  string  $cursor
      * @return integer
      */
-    public function decodeCursor(array $args)
+    public function decodeCursor($cursor)
     {
-        return isset($args['after']) ? (int) Node::decodeRelayId($args['after']) : 0;
+
+        return Node::decodeRelayId($cursor);
     }
 
     /**
