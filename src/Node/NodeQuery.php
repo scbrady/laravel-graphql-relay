@@ -56,14 +56,28 @@ class NodeQuery extends GraphQLQuery
     {
         list($typeClass, $id) = Node::fromGlobalId($args['id']);
 
-        $types = collect($this->graphQL->getTypes());
+        //$types = collect($this->graphQL->getTypes());
+        //dd($types[$types->search($typeClass)]);
+        //$objectType = app($types[$types->search($typeClass)]);
 
-        $objectType = app($types[$types->search($typeClass)]);
+        //$model = $objectType->resolveById($id);
 
-        $model = $objectType->resolveById($id);
+        //$model->graphqlType = $types[$types->search($typeClass)];
 
-        $model->graphqlType = $type;
+        //return $model ?: null;
 
-        return $model ?: null;
+        foreach ($this->graphQL->getTypes() as $type => $class) {
+            if ($typeClass == $class) {
+                $objectType = app($typeClass);
+                $model = $objectType->resolveById($id);
+                if (is_array($model)) {
+                    $model['graphqlType'] = $type;
+                } elseif (is_object($model)) {
+                    $model->graphqlType = $type;
+                }
+                return $model;
+            }
+        }
+        return null;
     }
 }
